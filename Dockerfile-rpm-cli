@@ -1,0 +1,7 @@
+FROM jboss/wildfly
+
+USER root
+
+COPY build/distributions/wildflyApp-0.0.1.i386.rpm .
+COPY scripts scripts
+RUN scripts/installRpmWithCli.sh

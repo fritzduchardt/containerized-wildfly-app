@@ -1,0 +1,7 @@
+FROM openjdk:11 as base
+COPY . data
+WORKDIR data
+RUN ./gradlew war
+
+FROM jboss/wildfly
+COPY --from=base --chown=1000:1000 /data/build/libs/wildflyApp.war /opt/jboss/wildfly/standalone/deployments/

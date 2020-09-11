@@ -1,0 +1,6 @@
+FROM jboss/wildfly
+
+USER root
+
+COPY build/distributions/wildflyApp-0.0.1.i386.rpm .
+RUN yum localinstall wildflyApp-0.0.1.i386.rpm -y

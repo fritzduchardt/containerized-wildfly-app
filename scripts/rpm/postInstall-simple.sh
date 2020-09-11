@@ -1,0 +1,1 @@
+cp /opt/jboss/wildfly-app/lib/wildflyApp.war /opt/jboss/wildfly/standalone/deployments/

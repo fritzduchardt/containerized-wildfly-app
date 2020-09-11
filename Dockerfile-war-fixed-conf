@@ -1,0 +1,7 @@
+FROM jboss/wildfly
+
+COPY --chown=1000:1000 build/libs/wildflyApp.war /opt/jboss/wildfly/standalone/deployments/
+COPY --chown=1000:1000 scripts/resources/standalone-fixed.xml /opt/jboss/wildfly/standalone/configuration/standalone.xml
+RUN mkdir -p /opt/jboss/wildfly/modules/system/layers/base/com/mysql/main
+COPY --chown=1000:1000 /scripts/resources/module.xml  /opt/jboss/wildfly/modules/system/layers/base/com/mysql/main/
+COPY --chown=1000:1000 /mysql-connector/mysql-connector-java-8.0.21.jar /mysql-connector-java-8.0.21.jar

@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.netflix.nebula:gradle-ospackage-plugin:8.4.1'
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'war'
+}
+
+repositories {
+    maven { url 'https://repository.jboss.org/nexus/content/groups/public-jboss' }
+    maven { url 'https://repository.jboss.org/nexus/content/repositories' }
+    maven { url 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases' }
+    mavenCentral()
+}
+
+dependencies {
+    providedCompile 'org.wildfly:wildfly-spec-api:16.0.0.Final'
+    compile 'org.apache.commons:commons-configuration2:2.7'
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+}
+
+test {
+    // Use junit platform for unit tests
+    useJUnitPlatform()
+}
+
+war {
+    archiveName 'wildflyApp.war'
+    from 'src/webapp' // adds a file-set to the root of the archive
+}
+
+apply plugin: 'nebula.rpm'
+
+task buildRpm(type: Rpm) {
+
+    dependsOn(build)
+
+    packageName 'wildflyApp'
+    version '0.0.1'
+    arch I386
+    os LINUX
+
+    postInstall file('scripts/rpm/postInstall-simple.sh')
+//    postInstall file('scripts/rpm/postInstall-fixed-creds-cli.sh')
+//    postInstall file('scripts/rpm/postInstall-env-cli.sh')
+//    postInstall file('scripts/rpm/postInstall-copy-config-fixed.sh')
+//    postInstall file('scripts/rpm/postInstall-copy-config-env.sh')
+
+    into '/opt/jboss/wildfly-app'
+
+    from(war.outputs.files) {
+        into 'lib'
+    }
+    from('mysql-connector') {
+        into 'lib'
+    }
+
+    from('scripts/resources') {
+        into 'lib'
+    }
+}
