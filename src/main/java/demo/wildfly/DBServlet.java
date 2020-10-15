@@ -1,25 +1,21 @@
 package demo.wildfly;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.*;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.SQLException;
+import javax.naming.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
+import javax.sql.*;
+import java.sql.*;
+import java.time.*;
+import java.time.format.*;
 
 @WebServlet(name = "DBServlet", urlPatterns = {"connect"}, loadOnStartup = 1)
 public class DBServlet extends HttpServlet {
 
     private static Log LOGGER = LogFactory.getLog(DBServlet.class);
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 
         InitialContext cxt;
         try {
@@ -31,21 +27,27 @@ public class DBServlet extends HttpServlet {
 
         DataSource ds;
         try {
-            ds = (DataSource) cxt.lookup( "java:/WildflyAppDS" );
-        } catch (NamingException e) {
-            e.printStackTrace();
-            return;
-        }
 
-        try {
-            ds.getConnection();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            return;
+            ds = (DataSource) cxt.lookup("java:/WildflyAppDS");
+            Connection connection;
+            connection = ds.getConnection();
+
+            connection.prepareStatement("CREATE TABLE IF NOT EXISTS logs (message varchar(200))").execute();
+
+            PreparedStatement insert = connection.prepareStatement("INSERT INTO logs VALUES (?)");
+            insert.setString(1, LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+            insert.execute();
+
+            String msg = "Connection success";
+            LOGGER.info(msg);
+            response.getWriter().print(msg);
+
+            connection.close();
+
+        } catch (Exception e) {
+            LOGGER.error(e);
+            throw new RuntimeException(e);
         }
-        String msg = "Connection success";
-        LOGGER.info(msg);
-        response.getWriter().print(msg);
     }
 
 }
