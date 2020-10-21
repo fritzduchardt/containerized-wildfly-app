@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: wildfly
+  name: wildfly
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: wildfly
+  template:
+    metadata:
+      labels:
+        run: wildfly
+    spec:
+      containers:
+      - image: 097158136231.dkr.ecr.eu-central-1.amazonaws.com/wildfly:11
+        name: wildfly
+        env:
+          - name: MYSQL_HOST
+            valueFrom:
+              configMapKeyRef:
+                key: MYSQL_HOST
+                name: mysql
+          - name: MYSQL_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                key: MYSQL_USERNAME
+                name: mysql
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: MYSQL_PASSWORD
+                name: mysql
+        ports:
+          - containerPort: 8080
+            name: web
+        livenessProbe:
+          httpGet:
+            port: 8080
+            path: /wildflyApp/ping
+        resources:
+          requests:
+            cpu: 1
+            memory: 2Gi
+          limits:
+            cpu: 1
+            memory: 2Gi
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
